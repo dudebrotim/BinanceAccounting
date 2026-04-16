@@ -1,0 +1,20 @@
+[binance]
+api_key = ""        # or set env BINANCE_API_KEY
+secret_key = ""     # or set env BINANCE_SECRET_KEY
+
+[google]
+# Path to service account JSON credential file
+# or set env GOOGLE_SERVICE_ACCOUNT_PATH
+service_account_path = "credentials/service_account.json"
+spreadsheet_id = "198YSdo5NHKy0JhqEUEyM3TjMFQxbxRlS2ICpQJPaKFk"
+worksheet_name = "daily_assets"
+
+[snapshot]
+data_dir = "data"   # local snapshot directory
+
+[settings]
+timezone = "Asia/Taipei"
+# Coins to show individual columns for (leave empty for auto top-10 by USD value)
+tracked_coins = []
+# Minimum USD value to include an asset (filters dust)
+min_usd_value = 1.0

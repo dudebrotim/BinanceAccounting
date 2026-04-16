@@ -1,0 +1,15 @@
+__pycache__/
+*.pyc
+*.egg-info/
+dist/
+build/
+.env
+config/*.toml
+!config/config.example.toml
+data/
+*.json
+!config/*.json
+credentials*.json
+service_account*.json
+.venv/
+venv/
