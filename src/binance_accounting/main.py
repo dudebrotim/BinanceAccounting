@@ -47,7 +47,7 @@ def resolve(cfg_value: str, env_key: str) -> str:
     return val
 
 
-# ── top-N coin selection ────────────────────────────────────────────
+# ── coin selection ──────────────────────────────────────────────────
 
 def pick_tracked_coins(
     snapshot_data: dict, configured: list[str]
@@ -56,6 +56,19 @@ def pick_tracked_coins(
     if configured:
         return configured
     return sorted(snapshot_data.get("assets", {}).keys())
+
+
+def resolve_worksheet(today: date, google_cfg: dict) -> tuple[str, bool]:
+    """Resolve worksheet name and whether weekly summary mode is enabled."""
+    base = google_cfg.get("worksheet_name", "daily_assets")
+    mode = str(google_cfg.get("worksheet_mode", "weekly")).strip().lower()
+    if mode == "fixed":
+        return base, False
+    if mode != "weekly":
+        logger.warning("Unknown google.worksheet_mode=%r, fallback to weekly", mode)
+    week_start = today - timedelta(days=today.weekday())
+    week_end = week_start + timedelta(days=6)
+    return f"{base}_{week_start:%Y%m%d}_{week_end:%Y%m%d}", True
 
 
 # ── main pipeline ───────────────────────────────────────────────────
@@ -111,7 +124,7 @@ def run(cfg: dict, dry_run: bool = False) -> None:
     google_cfg = cfg.get("google", {})
     sa_path = resolve(google_cfg.get("service_account_path", ""), "GOOGLE_SERVICE_ACCOUNT_PATH")
     spreadsheet_id = google_cfg.get("spreadsheet_id", "")
-    worksheet_name = google_cfg.get("worksheet_name", "daily_assets")
+    worksheet_name, weekly_summary = resolve_worksheet(today, google_cfg)
 
     if not spreadsheet_id:
         logger.error("Missing google.spreadsheet_id in config")
@@ -130,6 +143,7 @@ def run(cfg: dict, dry_run: bool = False) -> None:
         today=today,
         diff=diff,
         tracked_coins=tracked,
+        weekly_summary=weekly_summary,
     )
     logger.info("Done — row appended to Google Sheet")
 

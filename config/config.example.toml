@@ -7,7 +7,8 @@ secret_key = ""     # or set env BINANCE_SECRET_KEY
 # or set env GOOGLE_SERVICE_ACCOUNT_PATH
 service_account_path = "credentials/service_account.json"
 spreadsheet_id = "198YSdo5NHKy0JhqEUEyM3TjMFQxbxRlS2ICpQJPaKFk"
-worksheet_name = "daily_assets"
+worksheet_name = "daily_assets"  # base name
+worksheet_mode = "weekly"         # weekly | fixed
 
 [snapshot]
 data_dir = "data"   # local snapshot directory

@@ -16,6 +16,7 @@ SCOPES = [
     "https://www.googleapis.com/auth/spreadsheets",
 ]
 DEFAULT_SHEET_COLS = 200
+SUMMARY_ROW_LABEL = "WEEK_SUMMARY"
 
 # Fixed header columns (always present)
 FIXED_HEADERS = [
@@ -83,6 +84,41 @@ def _fmt(v: float | None, decimals: int = 2) -> str:
     return f"{v:.{decimals}f}"
 
 
+def _col_to_a1(n: int) -> str:
+    """1-based column index to A1 notation column letters."""
+    letters: list[str] = []
+    while n:
+        n, rem = divmod(n - 1, 26)
+        letters.append(chr(65 + rem))
+    return "".join(reversed(letters))
+
+
+def _upsert_weekly_summary(ws, header_count: int) -> None:
+    """Ensure row 2 is reserved for worksheet-level weekly summary formulas."""
+    row2 = ws.row_values(2)
+    if row2 and row2[0] and row2[0] != SUMMARY_ROW_LABEL:
+        ws.insert_row([], index=2, value_input_option="USER_ENTERED")
+        logger.info("Inserted summary row at row 2")
+
+    row: list[str] = [
+        SUMMARY_ROW_LABEL,
+        '=IF(COUNTA(B3:B)=0,"",INDEX(B3:B,COUNTA(B3:B)))',
+        '=IF(COUNTA(C3:C)=0,"",SUM(C3:C))',
+        '=IF(COUNTA(B3:B)<2,"",(INDEX(B3:B,COUNTA(B3:B))/INDEX(B3:B,1)-1)*100)',
+        '=IF(COUNTA(E3:E)=0,"",INDEX(E3:E,COUNTA(E3:E)))',
+        '=IF(COUNTA(F3:F)=0,"",INDEX(F3:F,COUNTA(F3:F)))',
+        '=IF(COUNTA(G3:G)=0,"",INDEX(G3:G,COUNTA(G3:G)))',
+    ]
+    if len(row) < header_count:
+        row.extend([""] * (header_count - len(row)))
+    ws.update(
+        range_name=f"A2:{_col_to_a1(header_count)}2",
+        values=[row],
+        value_input_option="USER_ENTERED",
+    )
+    logger.info("Upserted weekly summary row")
+
+
 def append_row(
     sa_path: str,
     spreadsheet_id: str,
@@ -91,10 +127,13 @@ def append_row(
     diff: SummaryDiff,
     tracked_coins: list[str],
     notes: str = "",
+    weekly_summary: bool = False,
 ) -> None:
     """Append one summary row to the Google Sheet."""
     ws = _connect(sa_path, spreadsheet_id, worksheet_name)
-    _ensure_headers(ws, tracked_coins)
+    headers = _ensure_headers(ws, tracked_coins)
+    if weekly_summary:
+        _upsert_weekly_summary(ws, len(headers))
 
     row: list[str] = [
         today.isoformat(),

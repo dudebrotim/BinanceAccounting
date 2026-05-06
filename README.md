@@ -64,7 +64,8 @@ secret_key = "your_secret_key"
 [google]
 service_account_path = "credentials/service_account.json"
 spreadsheet_id = "your_spreadsheet_id"
-worksheet_name = "daily_assets"
+worksheet_name = "daily_assets"  # base name
+worksheet_mode = "weekly"        # weekly | fixed
 
 [snapshot]
 data_dir = "data"
@@ -112,7 +113,12 @@ python -m binance_accounting -v
 
 ## Google Sheet 輸出格式
 
-每日追加一列到 `daily_assets` 工作表：
+預設會按週自動建立分頁（週一到週日），例如：
+
+- `daily_assets_20260504_20260510`
+- `daily_assets_20260511_20260517`
+
+每日追加一列到該週分頁，且第 2 列會保留 `WEEK_SUMMARY` 週總結公式列。
 
 | Date | Total_USD | Change_USD | Change_% | Spot_USD | Funding_USD | Futures_USD | BTC_qty | BTC_usd | BTC_qty_chg | BTC_usd_chg | ... | Notes |
 |------|-----------|------------|----------|----------|-------------|-------------|---------|---------|-------------|-------------|-----|-------|
@@ -120,6 +126,7 @@ python -m binance_accounting -v
 - 固定欄位：日期、總資產、日增減、各帳戶小計
 - 動態欄位：每個追蹤幣種的數量、USD 估值、數量變化、估值變化
 - `tracked_coins` 留空時，自動涵蓋當日所有幣種
+- 若要維持單一固定分頁，將 `worksheet_mode` 改為 `fixed`
 
 ## 排程（Cron）
 
