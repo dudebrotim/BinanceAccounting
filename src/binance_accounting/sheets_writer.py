@@ -27,6 +27,7 @@ FIXED_HEADERS = [
     "Spot_USD",
     "Funding_USD",
     "Futures_USD",
+    "Earn_USD",
 ]
 
 
@@ -108,6 +109,7 @@ def _upsert_weekly_summary(ws, header_count: int) -> None:
         '=IF(COUNTA(E3:E)=0,"",INDEX(E3:E,COUNTA(E3:E)))',
         '=IF(COUNTA(F3:F)=0,"",INDEX(F3:F,COUNTA(F3:F)))',
         '=IF(COUNTA(G3:G)=0,"",INDEX(G3:G,COUNTA(G3:G)))',
+        '=IF(COUNTA(H3:H)=0,"",INDEX(H3:H,COUNTA(H3:H)))',
     ]
     if len(row) < header_count:
         row.extend([""] * (header_count - len(row)))
@@ -143,6 +145,7 @@ def append_row(
         _fmt(diff.today_spot_usd),
         _fmt(diff.today_funding_usd),
         _fmt(diff.today_futures_usd),
+        _fmt(diff.today_earn_usd),
     ]
 
     # Per-coin columns

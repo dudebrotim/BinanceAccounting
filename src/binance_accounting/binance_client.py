@@ -1,4 +1,4 @@
-"""Binance API client — fetches Spot, Funding, and Futures balances."""
+"""Binance API client — fetches Spot, Funding, Futures, and Earn balances."""
 
 from __future__ import annotations
 
@@ -6,7 +6,7 @@ import hashlib
 import hmac
 import logging
 import time
-from dataclasses import dataclass, field
+from dataclasses import dataclass
 
 import httpx
 
@@ -27,7 +27,7 @@ class AssetBalance:
     free: float
     locked: float
     total: float
-    account_type: str  # "spot" | "funding" | "futures"
+    account_type: str  # "spot" | "funding" | "futures" | "earn"
 
 
 class BinanceClient:
@@ -53,6 +53,37 @@ class BinanceClient:
 
     def _headers(self) -> dict:
         return {"X-MBX-APIKEY": self._api_key}
+
+    def _iter_simple_earn_positions(self, endpoint: str, page_size: int = 100) -> list[dict]:
+        """Fetch all paginated Simple Earn positions from a signed sapi endpoint."""
+        rows: list[dict] = []
+        current = 1
+        total: int | None = None
+        while True:
+            params = self._sign({"current": current, "size": page_size})
+            resp = self._http.get(
+                f"{SPOT_BASE}{endpoint}",
+                params=params,
+                headers=self._headers(),
+            )
+            resp.raise_for_status()
+            payload = resp.json()
+            page_rows = payload.get("rows", [])
+            rows.extend(page_rows)
+            if total is None:
+                total = int(payload.get("total", 0))
+            if not page_rows or len(rows) >= total:
+                break
+            current += 1
+        return rows
+
+    @staticmethod
+    def _extract_earn_amount(position: dict) -> float:
+        for key in ("totalAmount", "amount", "holdingAmount"):
+            raw = position.get(key)
+            if raw is not None:
+                return float(raw)
+        return 0.0
 
     # ── spot ────────────────────────────────────────────────────────
 
@@ -125,6 +156,34 @@ class BinanceClient:
         logger.info("Futures: fetched %d non-zero assets", len(result))
         return result
 
+    # ── simple earn (flexible + locked) ──────────────────────────────
+
+    def get_earn_balances(self) -> list[AssetBalance]:
+        result: list[AssetBalance] = []
+
+        flexible_rows = self._iter_simple_earn_positions("/sapi/v1/simple-earn/flexible/position")
+        for p in flexible_rows:
+            amount = self._extract_earn_amount(p)
+            if amount <= 0:
+                continue
+            asset = p.get("asset")
+            if not asset:
+                continue
+            result.append(AssetBalance(asset, 0.0, amount, amount, "earn"))
+
+        locked_rows = self._iter_simple_earn_positions("/sapi/v1/simple-earn/locked/position")
+        for p in locked_rows:
+            amount = self._extract_earn_amount(p)
+            if amount <= 0:
+                continue
+            asset = p.get("asset")
+            if not asset:
+                continue
+            result.append(AssetBalance(asset, 0.0, amount, amount, "earn"))
+
+        logger.info("Earn: fetched %d non-zero positions", len(result))
+        return result
+
     # ── prices ──────────────────────────────────────────────────────
 
     def get_all_prices(self) -> dict[str, float]:
@@ -138,7 +197,8 @@ class BinanceClient:
         spot = self.get_spot_balances()
         funding = self.get_funding_balances()
         futures = self.get_futures_balances()
-        return spot + funding + futures
+        earn = self.get_earn_balances()
+        return spot + funding + futures + earn
 
     def close(self) -> None:
         self._http.close()

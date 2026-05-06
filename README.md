@@ -1,6 +1,6 @@
 # Binance Accounting
 
-每日自動從 Binance 擷取 Spot / Funding / Futures 資產，計算數量與 USD 估值變化，並追加寫入 Google Sheet。
+每日自動從 Binance 擷取 Spot / Funding / Futures / Simple Earn 資產，計算數量與 USD 估值變化，並追加寫入 Google Sheet。
 
 ## 專案結構
 
@@ -11,7 +11,7 @@ BinanceAccounting/
 ├── data/                      # 每日快照 JSON（自動產生，已 gitignore）
 ├── src/binance_accounting/
 │   ├── main.py                # CLI 入口，串接所有流程
-│   ├── binance_client.py      # Binance REST API 封裝（Spot/Funding/Futures）
+│   ├── binance_client.py      # Binance REST API 封裝（Spot/Funding/Futures/Simple Earn）
 │   ├── valuation.py           # 各幣 → USD 估值（支援 USDT/USDC/BTC/ETH 路由）
 │   ├── snapshot_store.py      # 本地 JSON 快照存取
 │   ├── diff.py                # 與前一日快照比較，產出數量 + USD 差異
@@ -26,7 +26,7 @@ BinanceAccounting/
 
 ```
 Binance API ─→ 資產擷取 ─→ USD 估值 ─→ 本地快照 ─→ 日差計算 ─→ Google Sheet
- (Spot/Funding/Futures)      (市價轉換)    (JSON)     (qty + USD)    (append row)
+ (Spot/Funding/Futures/Earn) (市價轉換)    (JSON)     (qty + USD)    (append row)
 ```
 
 ## 環境需求
@@ -120,8 +120,8 @@ python -m binance_accounting -v
 
 每日追加一列到該週分頁，且第 2 列會保留 `WEEK_SUMMARY` 週總結公式列。
 
-| Date | Total_USD | Change_USD | Change_% | Spot_USD | Funding_USD | Futures_USD | BTC_qty | BTC_usd | BTC_qty_chg | BTC_usd_chg | ... | Notes |
-|------|-----------|------------|----------|----------|-------------|-------------|---------|---------|-------------|-------------|-----|-------|
+| Date | Total_USD | Change_USD | Change_% | Spot_USD | Funding_USD | Futures_USD | Earn_USD | BTC_qty | BTC_usd | BTC_qty_chg | BTC_usd_chg | ... | Notes |
+|------|-----------|------------|----------|----------|-------------|-------------|----------|---------|---------|-------------|-------------|-----|-------|
 
 - 固定欄位：日期、總資產、日增減、各帳戶小計
 - 動態欄位：每個追蹤幣種的數量、USD 估值、數量變化、估值變化
@@ -145,7 +145,7 @@ crontab -e
 每次執行會在 `data/` 目錄下產生當日 JSON 快照（如 `2026-04-16.json`），包含：
 
 - 總資產 USD
-- 各帳戶（Spot/Funding/Futures）小計
+- 各帳戶（Spot/Funding/Futures/Earn）小計
 - 每幣的數量、USD 估值、價格、帳戶分布
 
 快照用於次日比較計算差異，首次執行時無前日資料，差異欄位會顯示 `N/A (first)`。

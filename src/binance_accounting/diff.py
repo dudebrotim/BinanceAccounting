@@ -26,6 +26,7 @@ class SummaryDiff:
     today_spot_usd: float
     today_funding_usd: float
     today_futures_usd: float
+    today_earn_usd: float
     coins: dict[str, CoinDiff]
 
 
@@ -39,7 +40,7 @@ def build_snapshot_data(valued_assets: list) -> dict:
     """Convert a list of ValuedAsset into the JSON-serialisable snapshot dict."""
     assets: dict[str, dict] = {}
     total_usd = 0.0
-    by_account = {"spot": 0.0, "funding": 0.0, "futures": 0.0}
+    by_account = {"spot": 0.0, "funding": 0.0, "futures": 0.0, "earn": 0.0}
 
     for va in valued_assets:
         total_usd += va.usd_value
@@ -76,6 +77,7 @@ def compute_diff(today: dict, yesterday: dict | None) -> SummaryDiff:
     t_spot = today["by_account"].get("spot", 0)
     t_fund = today["by_account"].get("funding", 0)
     t_fut = today["by_account"].get("futures", 0)
+    t_earn = today["by_account"].get("earn", 0)
 
     y_total = yesterday["total_usd"] if yesterday else 0
     y_assets = yesterday.get("assets", {}) if yesterday else {}
@@ -109,5 +111,6 @@ def compute_diff(today: dict, yesterday: dict | None) -> SummaryDiff:
         today_spot_usd=t_spot,
         today_funding_usd=t_fund,
         today_futures_usd=t_fut,
+        today_earn_usd=t_earn,
         coins=coins,
     )

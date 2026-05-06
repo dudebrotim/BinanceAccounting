@@ -158,6 +158,7 @@ def _print_summary(diff) -> None:
     print(f"  Spot USD:      ${diff.today_spot_usd:>14,.2f}")
     print(f"  Funding USD:   ${diff.today_funding_usd:>14,.2f}")
     print(f"  Futures USD:   ${diff.today_futures_usd:>14,.2f}")
+    print(f"  Earn USD:      ${diff.today_earn_usd:>14,.2f}")
     print(f"{'─' * 50}")
     print("  Top coins:")
     ranked = sorted(diff.coins.values(), key=lambda c: c.today_usd, reverse=True)
