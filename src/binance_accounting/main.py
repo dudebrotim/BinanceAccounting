@@ -50,14 +50,12 @@ def resolve(cfg_value: str, env_key: str) -> str:
 # ── top-N coin selection ────────────────────────────────────────────
 
 def pick_tracked_coins(
-    snapshot_data: dict, configured: list[str], top_n: int = 10
+    snapshot_data: dict, configured: list[str]
 ) -> list[str]:
-    """If the user specified coins, use those; otherwise pick top-N by USD."""
+    """If user configured coins, use those; otherwise include all coins in snapshot."""
     if configured:
         return configured
-    assets = snapshot_data.get("assets", {})
-    ranked = sorted(assets.items(), key=lambda kv: kv[1]["usd_value"], reverse=True)
-    return [coin for coin, _ in ranked[:top_n]]
+    return sorted(snapshot_data.get("assets", {}).keys())
 
 
 # ── main pipeline ───────────────────────────────────────────────────
@@ -80,7 +78,7 @@ def run(cfg: dict, dry_run: bool = False) -> None:
     logger.info("Total raw balances: %d  |  Price pairs: %d", len(balances), len(prices))
 
     # 2) Valuation
-    min_usd = cfg.get("settings", {}).get("min_usd_value", 1.0)
+    min_usd = cfg.get("settings", {}).get("min_usd_value", 0.0)
     valued = value_assets(balances, prices, min_usd=min_usd)
     logger.info("Valued assets (after dust filter): %d", len(valued))
 

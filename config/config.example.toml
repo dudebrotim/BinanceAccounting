@@ -14,7 +14,7 @@ data_dir = "data"   # local snapshot directory
 
 [settings]
 timezone = "Asia/Taipei"
-# Coins to show individual columns for (leave empty for auto top-10 by USD value)
+# Coins to show individual columns for (leave empty to auto include all coins)
 tracked_coins = []
-# Minimum USD value to include an asset (filters dust)
-min_usd_value = 1.0
+# Minimum USD value to include an asset (set 0 to keep dust assets)
+min_usd_value = 0.0

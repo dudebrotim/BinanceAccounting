@@ -15,6 +15,7 @@ logger = logging.getLogger(__name__)
 SCOPES = [
     "https://www.googleapis.com/auth/spreadsheets",
 ]
+DEFAULT_SHEET_COLS = 200
 
 # Fixed header columns (always present)
 FIXED_HEADERS = [
@@ -35,7 +36,7 @@ def _connect(sa_path: str, spreadsheet_id: str, worksheet_name: str):
     try:
         ws = sh.worksheet(worksheet_name)
     except gspread.WorksheetNotFound:
-        ws = sh.add_worksheet(title=worksheet_name, rows=1000, cols=60)
+        ws = sh.add_worksheet(title=worksheet_name, rows=1000, cols=DEFAULT_SHEET_COLS)
         logger.info("Created new worksheet: %s", worksheet_name)
     return ws
 
@@ -57,6 +58,11 @@ def _ensure_headers(ws, tracked_coins: list[str]) -> list[str]:
     """Make sure the header row exists and includes columns for all tracked coins."""
     coin_headers = _build_coin_headers(tracked_coins)
     full_headers = FIXED_HEADERS + coin_headers + ["Notes"]
+    required_cols = len(full_headers)
+
+    if ws.col_count < required_cols:
+        ws.add_cols(required_cols - ws.col_count)
+        logger.info("Expanded worksheet columns to %d", ws.col_count)
 
     existing = ws.row_values(1) if ws.row_count > 0 else []
     if not existing:

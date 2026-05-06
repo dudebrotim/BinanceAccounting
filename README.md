@@ -71,8 +71,8 @@ data_dir = "data"
 
 [settings]
 timezone = "Asia/Taipei"
-tracked_coins = []        # 留空 = 自動選 Top 10 幣
-min_usd_value = 1.0       # 過濾灰塵資產
+tracked_coins = []        # 留空 = 自動涵蓋當日全部幣種
+min_usd_value = 0.0       # 保留灰塵資產
 ```
 
 ### 2. 設定環境變數（可選，優先於 config）
@@ -119,7 +119,7 @@ python -m binance_accounting -v
 
 - 固定欄位：日期、總資產、日增減、各帳戶小計
 - 動態欄位：每個追蹤幣種的數量、USD 估值、數量變化、估值變化
-- `tracked_coins` 留空時，自動選取 USD 價值最高的 10 個幣
+- `tracked_coins` 留空時，自動涵蓋當日所有幣種
 
 ## 排程（Cron）
 
