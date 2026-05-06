@@ -118,13 +118,14 @@ python -m binance_accounting -v
 - `daily_assets_20260504_20260510`
 - `daily_assets_20260511_20260517`
 
-每日追加一列到該週分頁，且第 2 列會保留 `WEEK_SUMMARY` 週總結公式列。
+新分頁會建立在 Google Sheet 的最左邊。  
+每次執行會更新「類似 CryptoAccount.csv」的矩陣格式：
 
-| Date | Total_USD | Change_USD | Change_% | Spot_USD | Funding_USD | Futures_USD | Earn_USD | BTC_qty | BTC_usd | BTC_qty_chg | BTC_usd_chg | ... | Notes |
-|------|-----------|------------|----------|----------|-------------|-------------|----------|---------|---------|-------------|-------------|-----|-------|
+| 區塊 | 說明 |
+|------|------|
+| Summary（上方） | 每日欄位（MM/DD）下更新 Total/Change/Spot/Funding/Futures/Earn |
+| Token Matrix（下方） | 每列一個幣，欄位包含 `Token`, `Price_USD`, `Qty_Change`, `USD_Change`，以及每日數量欄位 |
 
-- 固定欄位：日期、總資產、日增減、各帳戶小計
-- 動態欄位：每個追蹤幣種的數量、USD 估值、數量變化、估值變化
 - `tracked_coins` 留空時，自動涵蓋當日所有幣種
 - 若要維持單一固定分頁，將 `worksheet_mode` 改為 `fixed`
 
