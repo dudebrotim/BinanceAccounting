@@ -143,6 +143,7 @@ def run(cfg: dict, dry_run: bool = False) -> None:
         today=today,
         diff=diff,
         tracked_coins=tracked,
+        template_worksheet=google_cfg.get("template_worksheet", ""),
         weekly_summary=weekly_summary,
     )
     logger.info("Done — row appended to Google Sheet")

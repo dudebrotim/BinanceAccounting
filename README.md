@@ -66,6 +66,7 @@ service_account_path = "credentials/service_account.json"
 spreadsheet_id = "your_spreadsheet_id"
 worksheet_name = "daily_assets"  # base name
 worksheet_mode = "weekly"        # weekly | fixed
+template_worksheet = "2024/09/27 - 2024/10/03"  # 新分頁套用樣板（顏色/格式/公式）
 
 [snapshot]
 data_dir = "data"
@@ -119,15 +120,18 @@ python -m binance_accounting -v
 - `daily_assets_20260511_20260517`
 
 新分頁會建立在 Google Sheet 的最左邊。  
-每次執行會更新「類似 CryptoAccount.csv」的矩陣格式：
+每次執行會更新「類似 CryptoAccount.csv」的週表格式：
 
 | 區塊 | 說明 |
 |------|------|
-| Summary（上方） | 每日欄位（MM/DD）下更新 Total/Change/Spot/Funding/Futures/Earn |
-| Token Matrix（下方） | 每列一個幣，欄位包含 `Token`, `Price_USD`, `Qty_Change`, `USD_Change`，以及每日數量欄位 |
+| Header（第 1 列） | `Token / Fixed Rate / Spot Rate / (空欄) / Prev Qty / (CEX/DEX) / 週一~週日 / Weekly / Spot Value Diff` |
+| Section Rows（第 2 列起） | 區分 `Token / Margin / Staking / Chain/Cex / Loan / Short without profit / Limit Order (Recovery)` |
+| Data Rows | 目前自動資料會寫在 `Token`（一般幣）與 `Staking`（`LD*` 理財代幣） |
 
 - `tracked_coins` 留空時，自動涵蓋當日所有幣種
 - 若要維持單一固定分頁，將 `worksheet_mode` 改為 `fixed`
+- `template_worksheet` 可指定要複製的舊分頁樣板（新分頁建立時會複製顏色與格式）
+- `BNB`、`USDT` 會做特別底色標註
 
 ## 排程（Cron）
 

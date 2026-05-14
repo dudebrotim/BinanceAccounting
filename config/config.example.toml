@@ -9,6 +9,7 @@ service_account_path = "credentials/service_account.json"
 spreadsheet_id = "198YSdo5NHKy0JhqEUEyM3TjMFQxbxRlS2ICpQJPaKFk"
 worksheet_name = "daily_assets"  # base name
 worksheet_mode = "weekly"         # weekly | fixed
+template_worksheet = "2024/09/27 - 2024/10/03"  # copy style/colors/formulas for new tabs
 
 [snapshot]
 data_dir = "data"   # local snapshot directory
